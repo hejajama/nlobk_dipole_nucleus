@@ -4,7 +4,6 @@ Dipole-nucleus initial conditions for (KC)BK evolution at fixed impact parameter
 Eq. (19) of arXiv:2311.10491 (optical Glauber):
 
   N_A(r,b) = 1 - exp[ -A T_A(b) sigma0/2 * (r^2 Qs0^2)^gamma / 4 * ln(1/(r Lambda) + e_c e) ]
-
 used at all b (the large-b prescription N_A = A T_A sigma0/2 * N_p of the paper is NOT applied).
 
 Parameters: KCBK + PD fit of arXiv:2506.00487, MAP values (Table 1):
@@ -16,11 +15,23 @@ Output format readable by nlobk `-ic FILE`: lines "r[GeV^-1] N".
 import numpy as np
 from scipy.integrate import quad
 
-A = 197                      # gold
-QS0SQR = 0.090               # GeV^2
-GAMMA = 1.6
+A = 208                      # gold
+
+if A==197:
+ nukestr="Au"
+elif A==208:
+ nukestr="Pb"
+else:
+ print("Unknown nuclues " + str(A))
+ 
+
+fit="nlobk_mv_balsd"
+
+
+QS0SQR = 0.00721             # GeV^2
+GAMMA = 1.0
 EC = 1.0
-SIGMA02_MB = 20.7            # mb
+SIGMA02_MB = 22.8            # mb
 LAMBDA_QCD = 0.241           # GeV, same as nlobk config::LAMBDAQCD
 FMGEV = 0.1973269804         # GeV fm
 MB_TO_GEVM2 = 0.1 / FMGEV**2 # 1 mb = 0.1 fm^2
@@ -60,7 +71,7 @@ for b in range(0, 33, 2):
     c = A * T_A(b) * SIGMA02
     nvals = N_A(rvals, b)
     mode = "Eq.(19), optical Glauber (used at all b)"
-    fname = f"./kcbk_pd/Au/ic_Au_b_{b}.dat"
+    fname = f"./{fit}/{nukestr}/ic_Au_b_{b}.dat"
     with open(fname, "w") as f:
         f.write(f"# Dipole-nucleus IC, Eq. (19) of arXiv:2311.10491, A={A} (Au), b={b} GeV^-1 = {b*FMGEV:.4f} fm\n")
         f.write(f"# KCBK+PD MAP (arXiv:2506.00487): Qs0^2={QS0SQR} GeV^2 gamma={GAMMA} e_c={EC} "
