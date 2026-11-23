@@ -23,18 +23,16 @@ named after the nucleus (currently only `Au/`).
 The KCBK dipoles are taken from the fit to HERA data in
 C. Casuga, H. Hänninen and H. Mäntysaari, Phys. Rev. D 112, 034003 (2025),
 [arXiv:2506.00487](https://arxiv.org/abs/2506.00487), using the MAP (maximum a
-posteriori) parameter values. KCBK means the BK equation with a kinematical constraint,
-evolved in target rapidity.
+posteriori) parameter values. KCBK means the BK equation with a kinematical constraint
+from [arXiv:1401.0313](https://arxiv.org/abs/1401.0313).
 
 Dipoles from other setups will be added later.
 
 ### Grids
 
-- Dipole size: $r \in [10^{-5}, 200]\ \mathrm{GeV}^{-1}$ for the nucleus and
-  $r \in [10^{-5}, 30]\ \mathrm{GeV}^{-1}$ for the proton. Both use 101 points that are
-  evenly spaced in $\ln r$.
+- Dipole size: $r$ in \mathrm{GeV}^{-1}$ for the nucleus and the proton
 - Impact parameter (nucleus): $b = 0, 2, 4, \ldots, 32\ \mathrm{GeV}^{-1}$, with one file per $b$.
-- Evolution rapidity: $y$ in steps of $0.05$, with $y = \ln(x_0/x)$.
+- Evolution rapidity: $y \ln(x_0/x)$.
 
 All dimensionful quantities are in GeV units, so $r$ and $b$ are given in $\mathrm{GeV}^{-1}$.
 
