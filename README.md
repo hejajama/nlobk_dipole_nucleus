@@ -14,12 +14,12 @@ The evolution is computed with the [nlobk](https://github.com/hejajama/nlobk) so
 
 | Directory   | Description | Contents |
 |-------------|-------------|----------|
-| `kcbk_bal/` | KCBK, Balitsky + smallest-dipole running coupling, MAP parameters | `proton.dat`; `Au/Au_b_<b>.dat` (evolved), `Au/ic_Au_b_<b>.dat` (initial conditions) |
-| `kcbk_pd/`  | KCBK, parent-dipole running coupling, MAP parameters | `Au/ic_Au_b_<b>.dat` (initial conditions only; evolved dipoles to follow) |
+| `kcbk_bal/` | KCBK, Balitsky + smallest-dipole running coupling, MAP parameters | `proton.dat`; `Au/`, `Pb/`: `<A>_b_<b>.dat` (evolved), `ic_<A>_b_<b>.dat` (initial conditions) |
+| `kcbk_pd/`  | KCBK, parent-dipole running coupling, MAP parameters | `proton.dat`; `Au/`, `Pb/`: `<A>_b_<b>.dat` (evolved), `ic_<A>_b_<b>.dat` (initial conditions) |
 | `nlobk_mv_balsd/` | NLO BK, MV initial condition, Balitsky + smallest-dipole running coupling | `proton.dat`; `Au/`, `Pb/`: `<A>_b_<b>.dat` (evolved), `ic_<A>_b_<b>.dat` (initial conditions) |
 
 Each fit directory holds the proton dipole `proton.dat` and one subdirectory per nucleus,
-named after the nucleus (`Au/`, and `Pb/` for `nlobk_mv_balsd`).
+named after the nucleus (`Au/`, `Pb/`).
 
 The KCBK dipoles are taken from the fit to HERA data in
 C. Casuga, H. Hänninen and H. Mäntysaari, Phys. Rev. D 112, 034003 (2025),
@@ -38,8 +38,10 @@ Dipoles from other setups will be added later.
 
 ### Grids
 
-- Dipole size: logarithmic grid, $r \in [10^{-5}, 200]\ \mathrm{GeV}^{-1}$ (KCBK) and
-  $r \in [2\cdot 10^{-5}, 150]\ \mathrm{GeV}^{-1}$ (`nlobk_mv_balsd`), same for the nucleus and the proton.
+- Dipole size: logarithmic grid, same for the nucleus and the proton:
+  $r \in [10^{-5}, 30]\ \mathrm{GeV}^{-1}$ (`kcbk_bal`, 101 points),
+  $r \in [10^{-5}, 200]\ \mathrm{GeV}^{-1}$ (`kcbk_pd`, 101 points) and
+  $r \in [2\cdot 10^{-5}, 150]\ \mathrm{GeV}^{-1}$ (`nlobk_mv_balsd`, 121 points).
 - Impact parameter (nucleus): $b = 0, 2, 4, \ldots, 32\ \mathrm{GeV}^{-1}$, with one file per $b$.
 - Evolution rapidity: $y = \ln(x_0/x)$ from 0 to 15.
 
@@ -67,7 +69,13 @@ $$
 Here $\sigma_0/2$ is the proton transverse area from the fit. $T_A(b)$ is the nuclear
 thickness function, obtained from a Woods–Saxon density and normalized as
 $\int \mathrm{d}^2 b\, T_A(b) = 1$. This form is used at every impact parameter, and the
-script `generate_ic.py` generates the initial-condition files.
+script `generate_ic.py` generates the initial-condition files. Choose the nucleus and the fit
+on the command line:
+
+```bash
+python3 generate_ic.py --nucleus Pb --fit pd    # writes kcbk_pd/Pb/ic_Pb_b_<b>.dat
+python3 generate_ic.py --nucleus Au --fit bal   # writes kcbk_bal/Au/ic_Au_b_<b>.dat
+```
 
 ### Parameters
 
@@ -97,6 +105,20 @@ Nuclei:
 | $A$ | 197 | 208 |
 | Woods–Saxon radius $R_A = (1.12 A^{1/3} - 0.86 A^{-1/3})$ fm | 6.37 fm | 6.49 fm |
 | Woods–Saxon surface thickness $d$ | 0.54 fm | 0.54 fm |
+
+### Evolution
+
+Each impact parameter is evolved separately with [nlobk](https://github.com/hejajama/nlobk)
+up to $y = 15$, using the LO kernel with the kinematical constraint:
+
+```bash
+nlobk -ic FILE kcbk_bal/Pb/ic_Pb_b_<b>.dat -order lo -rc balitsky -alphas_scaling 1.74 -nf 3 -maxy 15 -output kcbk_bal/Pb/Pb_b_<b>.dat
+nlobk -ic FILE kcbk_pd/Pb/ic_Pb_b_<b>.dat  -order lo -rc parent   -alphas_scaling 663  -nf 3 -maxy 15 -output kcbk_pd/Pb/Pb_b_<b>.dat
+```
+
+The $r$ grid is fixed when nlobk is compiled (`MAXR` in `src/nlobk_config.cpp`):
+`kcbk_bal` uses the default `MAXR = 30` and `kcbk_pd` uses `MAXR = 200`.
+nlobk writes `###0.01` as the $x_0$ line; it is set to `###1.00` in the files here.
 
 ### Running coupling
 
@@ -142,7 +164,7 @@ from dipole import ProtonDipole, NucleusDipole
 
 proton = ProtonDipole("kcbk_bal")       # reads kcbk_bal/proton.dat
 nucleus = NucleusDipole("kcbk_bal", nucleus="Au")  # reads kcbk_bal/Au/Au_b_*.dat
-# lead = NucleusDipole("nlobk_mv_balsd", nucleus="Pb")  # reads nlobk_mv_balsd/Pb/Pb_b_*.dat
+# lead = NucleusDipole("kcbk_bal", nucleus="Pb")  # reads kcbk_bal/Pb/Pb_b_*.dat
 
 # The tables are stored on a grid of evolution rapidity y, measured from the
 # initial condition. dip.x0 is the reference value written in the data file,
