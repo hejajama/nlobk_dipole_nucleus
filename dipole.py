@@ -64,14 +64,16 @@ class NucleusDipole:
     small-r behaviour N ~ r^(2 gamma); interpolating N itself overshoots there.
 
     Args:
-        directory: directory containing files Au_b_<b>.dat
-        prefix: file name prefix (default "Au_b_")
+        directory: directory containing files <nucleus>_b_<b>.dat
+        nucleus: nucleus name (default "Au")
         method: interpolation method for RegularGridInterpolator
                 ("linear", "cubic", ...)
         log_amplitude: interpolate ln N instead of N (default True)
     """
 
-    def __init__(self, directory, prefix="Au_b_", method="linear", log_amplitude=True):
+    def __init__(self, directory, nucleus="Au", method="linear", log_amplitude=True):
+        directory = os.path.join(directory, nucleus)
+        prefix = f"{nucleus}_b_"
         pattern = re.compile(re.escape(prefix) + r"([0-9.eE+-]+)\.dat$")
         files = []
         for fname in glob.glob(os.path.join(directory, prefix + "*.dat")):
